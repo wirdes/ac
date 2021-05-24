@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+def main
+  puts ARGV.first
+end
+
+main
