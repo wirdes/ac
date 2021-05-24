@@ -1,8 +1,65 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+class Base
+  attr_reader :file
+
+  def initialize(file)
+    @file = file
+  end
+
+  def extract
+    raise NotImplementedError
+  end
+end
+
+class Zip < Base
+  def extract
+    puts "Zip dosyayı açıyorum: #{file}"
+
+    %x{unzip #{file}}
+  end
+end
+
+class Rar < Base
+  def extract
+    puts "Rar dosyayı açıyorum: #{file}"
+
+    %x{unrar x #{file}}
+  end
+end
+
+class Zstd < Base
+end
+
+# FIXME: Basit bir iş için fazla büyük
+class Archive
+  Error = Class.new StandardError
+
+  attr_reader :unpacker
+
+  def initialize(file)
+    @unpacker = case (ext = File.extname(file))
+                 when '.rar' then Rar.new file
+                 when '.zip' then Zip.new file
+                else
+                  raise Error, "Desteklenmeyen sıkıştırma biçimi: #{ext}"
+                 end
+  end
+
+  def extract
+    unpacker.extract
+  end
+end
+
 def main
-  puts ARGV.first
+  abort "Kullanım: #{$0} DOSYA" unless ARGV.size == 1
+
+  file = ARGV.first
+  archive = Archive.new file
+  archive.extract
+rescue Archive::Error => e
+  abort e.message
 end
 
 main
