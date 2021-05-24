@@ -16,7 +16,6 @@ end
 class Zip < Base
   def extract
     puts "Zip dosyayı açıyorum: #{file}"
-
     `unzip #{file}`
   end
 end
@@ -24,14 +23,12 @@ end
 class Rar < Base
   def extract
     puts "Rar dosyayı açıyorum: #{file}"
-
     `unrar x #{file}`
   end
 end
 
 class Archive
   Error = Class.new StandardError
-
   attr_reader :unpacker
 
   def initialize(file)
