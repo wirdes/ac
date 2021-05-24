@@ -17,7 +17,7 @@ class Zip < Base
   def extract
     puts "Zip dosyayı açıyorum: #{file}"
 
-    %x{unzip #{file}}
+    `unzip #{file}`
   end
 end
 
@@ -25,26 +25,21 @@ class Rar < Base
   def extract
     puts "Rar dosyayı açıyorum: #{file}"
 
-    %x{unrar x #{file}}
+    `unrar x #{file}`
   end
 end
 
-class Zstd < Base
-end
-
-# FIXME: Basit bir iş için fazla büyük
 class Archive
   Error = Class.new StandardError
 
   attr_reader :unpacker
 
   def initialize(file)
-    @unpacker = case (ext = File.extname(file))
-                 when '.rar' then Rar.new file
-                 when '.zip' then Zip.new file
-                else
-                  raise Error, "Desteklenmeyen sıkıştırma biçimi: #{ext}"
-                 end
+    support_types = %w[Rar Zip]
+    ext = File.extname(file).split('.').last.capitalize
+    raise Error, "Desteklenmeyen sıkıştırma biçimi: #{ext}" unless support_types.include?(ext)
+
+    eval("@unpacker = #{ext}.new file")
   end
 
   def extract
@@ -53,7 +48,7 @@ class Archive
 end
 
 def main
-  abort "Kullanım: #{$0} DOSYA" unless ARGV.size == 1
+  abort "Kullanım: #{$PROGRAM_NAME} DOSYA" unless ARGV.size == 1
 
   file = ARGV.first
   archive = Archive.new file
